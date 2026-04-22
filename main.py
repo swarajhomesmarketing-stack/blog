@@ -4,11 +4,15 @@ import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from datetime import datetime
 
-# Setup
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)
+# The library automatically looks for an environment variable named GOOGLE_API_KEY
+api_key = os.getenv("GOOGLE_API_KEY")
 
-# Use Gemini 1.5 Flash (It is faster and has a higher free limit)
+if not api_key:
+    print("CRITICAL ERROR: GOOGLE_API_KEY not found in environment variables.")
+    # This will help us debug in the GitHub Actions log
+    exit(1)
+
+genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 def get_topics():
@@ -20,7 +24,6 @@ def generate_blog(topic, platform):
     prompt = f"Write an 800-word humanized, professional blog for {platform} about: {topic}. Focus on Maharashtra, India. Use local real estate terms. Do not sound like an AI."
     
     try:
-        # Disable safety filters so it doesn't block real estate news
         response = model.generate_content(
             prompt,
             safety_settings={
@@ -32,8 +35,6 @@ def generate_blog(topic, platform):
         )
         return response.text
     except Exception as e:
-        # This will print the actual error in your GitHub Actions Log
-        print(f"Error generating blog for {topic}: {str(e)}")
         return f"AI Generation failed. Error: {str(e)}"
 
 def main():
@@ -49,7 +50,7 @@ def main():
     with open(filename, "w", encoding="utf-8") as f:
         f.write(f"DAILY BLOG REPORT: {date_str}\n" + "="*30 + "\n\n")
         for i in range(len(topics)):
-            print(f"Generating blog {i+1} of {len(topics)}...")
+            print(f"Generating blog {i+1}...")
             content = generate_blog(topics[i], platforms[i])
             img_url = f"https://image.pollinations.ai/prompt/luxury_real_estate_maharashtra_{topics[i].replace(' ', '_')}"
             
