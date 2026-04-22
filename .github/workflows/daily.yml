@@ -1,0 +1,30 @@
+name: Daily Blog Generator
+on:
+  schedule:
+    - cron: '30 3 * * *' # Runs at 9:00 AM IST daily
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install google-generativeai feedparser
+      - name: Run script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python main.py
+      - name: Save file to repo
+        run: |
+          git config --global user.name "DailyBot"
+          git config --global user.email "bot@github.com"
+          git add .
+          git commit -m "Added blogs for $(date +'%Y-%m-%d')" || exit 0
+          git push
