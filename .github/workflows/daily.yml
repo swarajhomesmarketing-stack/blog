@@ -1,34 +1,5 @@
-name: Daily Blog Generator
-on:
-  schedule:
-    - cron: '30 3 * * *'
-  workflow_dispatch: 
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # This removes the warning
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: pip install google-generativeai feedparser
-      - name: Run script
+- name: Run script
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # This connects your GitHub Secret to the Python Script
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: python main.py
-      - name: Save file to repo
-        run: |
-          git config --global user.name "DailyBot"
-          git config --global user.email "bot@github.com"
-          git add .
-          # The '|| exit 0' prevents the bot from crashing if no new changes were made
-          git commit -m "Added blogs for $(date +'%Y-%m-%d')" || exit 0
-          git push
