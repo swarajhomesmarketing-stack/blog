@@ -1,8 +1,11 @@
 name: Daily Blog Generator
 on:
   schedule:
-    - cron: '30 3 * * *' # Runs at 9:00 AM IST daily
+    - cron: '30 3 * * *'
   workflow_dispatch: 
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # This removes the warning
 
 jobs:
   build:
@@ -26,5 +29,6 @@ jobs:
           git config --global user.name "DailyBot"
           git config --global user.email "bot@github.com"
           git add .
+          # The '|| exit 0' prevents the bot from crashing if no new changes were made
           git commit -m "Added blogs for $(date +'%Y-%m-%d')" || exit 0
           git push
